@@ -40,7 +40,8 @@ async function main () {
 			.replace('{{usd_24h}}', currentPriceData.usd_24h_change.toFixed(2))
 			.replace('{{color}}', currentPriceData.usd_24h_change > 0 ? 'green' : 'red')
 		
-		req.respond({ body: finalHtml })
+		const headers = new Headers({ "Content-Type": "text/html; charset=utf-8" })
+		req.respond({ status: 200, body: finalHtml, headers })
 	}
 }
 
