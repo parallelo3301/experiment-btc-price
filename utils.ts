@@ -62,11 +62,10 @@ export const autorefreshedMs = (intervalMs: number) => async (
 	const hasError = () => { return !! lastFetchError }
 	const getError = () => { return lastFetchError }
 
-    if (autostart) {
-        setValue(await fetchResult())
-    }
-
-	start()
+	if (autostart) {
+		setValue(await fetchResult())
+		start()
+	}
 
 	return {
 		start,
