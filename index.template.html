@@ -1,11 +1,25 @@
-<!doctype html>
-<html>
-<head>
-    <title>BTC/USD</title>
+<!DOCTYPE html>
+<html lang="en">	
+<head>		
+	<meta charset="utf-8">
+    <title>BTC/USD | btc.parallelo3301.org</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="https://parallelo3301.org/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="https://parallelo3301.org/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="https://parallelo3301.org/favicon-16x16.png">
+	<link rel="stylesheet" type="text/css" href="https://parallelo3301.org/style.css" />
 </head>
 <body>
-    <h1>${{usd}}</h1>
-    <h2>24h change: <span style="color: {{color}}">{{usd_24h}}%</span></h2>
-    <p><small>(refetched every 60 seconds)</small></p>
+	<div id="wrap">
+		<div id="header">
+			<a href="https://parallelo3301.org"><img height="160" src="https://parallelo3301.org/avatar.png" /></a>
+            <h1>BTC/USD: ${{usd}}</h1>
+            <p>(24h change: <span style="color: {{color}}">{{usd_24h}}%</span>)</p>
+		</div>
+		<div style="margin-top: 40px">
+			<video width="400" class="phone-video" autoplay loop mutes playsinline>
+    			<source src="https://parallelo3301.org/real_world.mp4" type="video/mp4">
+			</video>
+		</div>
+	</div>
 </body>
 </html>
