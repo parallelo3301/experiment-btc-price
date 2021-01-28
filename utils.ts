@@ -2,79 +2,97 @@
  * Automatically refetch asynchronous data.
  * Uses single request on concurrent access.
  */
-export const autorefreshedMs = (intervalMs: number) => async (
-	{ initial, query, autostart = true }: { initial?: any, query: Function, autostart?: Boolean }
-) => {
-	let refetching = false
-	let loader: Promise<any> | null = null
-	let lastFetchError: any = null
-	let value: any = initial
-	let intervalId: number
+export const autorefreshedMs = (intervalMs: number) =>
+  async (
+    { initial, query, autostart = true }: {
+      initial?: any;
+      query: Function;
+      autostart?: Boolean;
+    },
+  ) => {
+    let refetching = false;
+    let loader: Promise<any> | null = null;
+    let lastFetchError: any = null;
+    let value: any = initial;
+    let intervalId: number;
 
-	const setValue = (val: any) => { value = val }
-	const getValue = () => value
-	// const clearValue = () => { value = null }
+    const setValue = (val: any) => {
+      value = val;
+    };
+    const getValue = () => value;
+    // const clearValue = () => { value = null }
 
-	const load = () => {
-		loader = new Promise((resolve, reject) => {
-			query().then(resolve).catch(reject)
-		})
+    const load = () => {
+      loader = new Promise((resolve, reject) => {
+        query().then(resolve).catch(reject);
+      });
 
-		return loader
-	}
+      return loader;
+    };
 
-	const fetchResult = async () => {
-		try {
-			if (refetching) {
-				return await loader
-			}
+    const fetchResult = async () => {
+      try {
+        if (refetching) {
+          return await loader;
+        }
 
-			refetching = true
-			const res = await load()
-			refetching = false
+        refetching = true;
+        const res = await load();
+        refetching = false;
 
-			lastFetchError = undefined
+        lastFetchError = undefined;
 
-			return res
-		} catch (e) {
-			lastFetchError = e
-			refetching = false
-			return value // OR undefined?
-		}
-	}
+        return res;
+      } catch (e) {
+        lastFetchError = e;
+        refetching = false;
+        return value; // OR undefined?
+      }
+    };
 
-	const start = () => {
-		stop()
-		intervalId = setInterval(async () => { setValue(await fetchResult()) }, intervalMs)
-	}
+    const start = () => {
+      stop();
+      intervalId = setInterval(async () => {
+        setValue(await fetchResult());
+      }, intervalMs);
+    };
 
-	const stop = () => { clearInterval(intervalId) }
+    const stop = () => {
+      clearInterval(intervalId);
+    };
 
-	const restart = () => { stop(); start() }
-	
-	const refetch = async () => {
-		stop()
-		setValue(await fetchResult())
-		start()
-		return getValue()
-	}
+    const restart = () => {
+      stop();
+      start();
+    };
 
-	const hasError = () => { return !! lastFetchError }
-	const getError = () => { return lastFetchError }
+    const refetch = async () => {
+      stop();
+      setValue(await fetchResult());
+      start();
+      return getValue();
+    };
 
-	if (autostart) {
-		setValue(await fetchResult())
-		start()
-	}
+    const hasError = () => {
+      return !!lastFetchError;
+    };
+    const getError = () => {
+      return lastFetchError;
+    };
 
-	return {
-		start,
-		stop,
-		restart,
-		refetch,
-		setValue,
-		getValue,
-		hasError,
-		getError,
-	}
-}
+    if (autostart) {
+      setValue(await fetchResult());
+      start();
+    }
+
+    return {
+      start,
+      stop,
+      restart,
+      refetch,
+      setValue,
+      getValue,
+      hasError,
+      getError,
+    };
+  };
