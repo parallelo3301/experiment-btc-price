@@ -40,10 +40,10 @@ async function main() {
     const currentPriceData: UsdPrice = (await btc).getValue();
 
     const finalHtml = template
-      .replace("{{usd}}", currentPriceData.usd.toLocaleString("en-US")) // toLocaleString not working - https://github.com/denoland/deno/issues/1968
-      .replace("{{usd_24h}}", currentPriceData.usd_24h_change.toFixed(2))
+      .replace(/{{usd}}/g, currentPriceData.usd.toLocaleString("en-US")) // toLocaleString not working - https://github.com/denoland/deno/issues/1968
+      .replace(/{{usd_24h}}/g, currentPriceData.usd_24h_change.toFixed(2))
       .replace(
-        "{{color}}",
+        /{{color}}/g,
         currentPriceData.usd_24h_change > 0 ? "green" : "red",
       );
 
