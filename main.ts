@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std/http/server.ts";
+import { Application, Router } from "https://deno.land/x/oak/mod.ts";
 import { autorefreshedMs } from "./utils.ts";
 
 interface UsdPrice {
@@ -20,36 +20,37 @@ async function fetchPrice(coinId: CoinId): Promise<UsdPrice> {
   return coinData;
 }
 
+const refreshEveryMinute = autorefreshedMs(60 * 1000);
+const btc = refreshEveryMinute({
+  initial: <UsdPrice> {
+    usd: 0,
+    usd_24h_change: 0,
+  },
+  query: () => fetchPrice("bitcoin"),
+});
+
 const port = parseInt(Deno.env.get("PORT") || "8000", 10);
-const server = serve({ port });
+const router = new Router();
+const template = await Deno.readTextFile("./index.template.html");
 
-async function main() {
-  const refreshEveryMinute = autorefreshedMs(60 * 1000);
+router.get('/', async (ctx) => {
+  const currentPriceData: UsdPrice = (await btc).getValue();
 
-  const btc = refreshEveryMinute({
-    initial: <UsdPrice> {
-      usd: 0,
-      usd_24h_change: 0,
-    },
-    query: () => fetchPrice("bitcoin"),
-  });
+  const finalHtml = template
+    .replace(/{{usd}}/g, currentPriceData.usd.toLocaleString("en-US")) // toLocaleString not working - https://github.com/denoland/deno/issues/1968
+    .replace(/{{usd_24h}}/g, currentPriceData.usd_24h_change.toFixed(2))
+    .replace(
+      /{{color}}/g,
+      currentPriceData.usd_24h_change > 0 ? "green" : "red",
+    );
 
-  const template = await Deno.readTextFile("./index.template.html");
+  ctx.response.headers.set("Content-Type", "text/html; charset=utf-8");
+  ctx.response.body = finalHtml
+});
 
-  for await (const req of server) {
-    const currentPriceData: UsdPrice = (await btc).getValue();
+const app = new Application();
 
-    const finalHtml = template
-      .replace(/{{usd}}/g, currentPriceData.usd.toLocaleString("en-US")) // toLocaleString not working - https://github.com/denoland/deno/issues/1968
-      .replace(/{{usd_24h}}/g, currentPriceData.usd_24h_change.toFixed(2))
-      .replace(
-        /{{color}}/g,
-        currentPriceData.usd_24h_change > 0 ? "green" : "red",
-      );
+app.use(router.routes());
+app.use(router.allowedMethods());
 
-    const headers = new Headers({ "Content-Type": "text/html; charset=utf-8" });
-    req.respond({ status: 200, body: finalHtml, headers });
-  }
-}
-
-main();
+await app.listen({ port });
